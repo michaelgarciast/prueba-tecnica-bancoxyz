@@ -43,7 +43,7 @@ pnpm test           # modo watch
 CI=true pnpm test   # una sola ejecución
 ```
 
-Cubren: login (válido e inválido), redirección sin sesión, saldo (éxito, error y descuento de transferencias), formulario de transferencia (validaciones, body enviado, fecha agendada, saldo insuficiente, error de la API) y la función de filtros.
+Cubren: login (válido, inválido y sesión expirada), redirección sin sesión, saldo (éxito, error y descuento de transferencias), formulario de transferencia (validaciones, confirmación y edición, body enviado, fecha agendada, saldo insuficiente, error de la API) y la función de filtros.
 
 ## Usuarios de prueba
 
@@ -73,9 +73,3 @@ src/
 - **Fechas en hora local:** "hoy" se calcula en formato `YYYY-MM-DD` local (no con `toISOString()`, que usa UTC).
 - **Transferencias locales:** la API no persiste las transferencias creadas (`/transferList` siempre devuelve los mismos datos y `/balance` no cambia). Para que el flujo crear → listar sea demostrable, cada transferencia exitosa se guarda en `localStorage` por usuario: aparece en el historial, y las que ya están vencidas se descuentan del saldo mostrado y del disponible para transferir.
 
-## Mejoras futuras
-
-- Guardar el token en una cookie `httpOnly` emitida por el backend, en lugar de `localStorage`.
-- Persistir las transferencias en el servidor y eliminar la capa local.
-- Descontar también las transferencias agendadas del saldo disponible.
-- Paginación y filtros en el servidor para historiales grandes.
