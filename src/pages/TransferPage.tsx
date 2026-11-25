@@ -15,7 +15,7 @@ export default function TransferPage() {
   let content: ReactNode;
   if (error) {
     content = (
-      <p className="alert alert-error" role="alert">
+      <p className="alert-error" role="alert">
         {error}
       </p>
     );

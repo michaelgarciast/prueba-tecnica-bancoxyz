@@ -5,10 +5,10 @@ Aplicación de banca en línea: login, consulta de saldo, transferencias (inmedi
 ## Stack
 
 - Create React App + TypeScript
-- React Router (única dependencia extra)
+- React Router
 - `fetch` nativo con un helper `request()` tipado
 - Context API para la sesión; estado local en el resto
-- CSS plano en `src/index.css`
+- Tailwind CSS v3 (la versión que CRA 5 soporta sin configuración extra): utilidades en el JSX y unas pocas clases reutilizables (`btn`, `input`, `card`, `alert-*`) en `src/index.css`
 - Jest + React Testing Library (incluidos en CRA)
 
 ## Requisitos

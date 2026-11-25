@@ -5,19 +5,23 @@ interface Props {
   onChange: (filters: Filters) => void;
 }
 
-export default function TransferFilters({ filters, onChange }: Props) {
+export default function TransferFilters({ filters, onChange }: Readonly<Props>) {
   const set = (key: keyof Filters) => (e: React.ChangeEvent<HTMLInputElement>) =>
     onChange({ ...filters, [key]: e.target.value });
 
   return (
-    <form className="card filters" onSubmit={(e) => e.preventDefault()}>
+    <form
+      className="card mb-6 grid gap-4 sm:grid-cols-[repeat(4,1fr)_auto] sm:items-end"
+      onSubmit={(e) => e.preventDefault()}
+    >
       <label className="field">
-        Destinatario
-        <input name="name" autoComplete="off" value={filters.name} onChange={set('name')} />
+        <span>Destinatario</span>
+        <input className="input" name="name" autoComplete="off" value={filters.name} onChange={set('name')} />
       </label>
       <label className="field">
-        Valor mínimo
+        <span>Valor mínimo</span>
         <input
+          className="input"
           type="number"
           name="minValue"
           autoComplete="off"
@@ -27,8 +31,9 @@ export default function TransferFilters({ filters, onChange }: Props) {
         />
       </label>
       <label className="field">
-        Valor máximo
+        <span>Valor máximo</span>
         <input
+          className="input"
           type="number"
           name="maxValue"
           autoComplete="off"
@@ -38,10 +43,17 @@ export default function TransferFilters({ filters, onChange }: Props) {
         />
       </label>
       <label className="field">
-        Fecha
-        <input type="date" name="date" autoComplete="off" value={filters.date} onChange={set('date')} />
+        <span>Fecha</span>
+        <input
+          className="input"
+          type="date"
+          name="date"
+          autoComplete="off"
+          value={filters.date}
+          onChange={set('date')}
+        />
       </label>
-      <button type="button" className="btn-secondary" onClick={() => onChange(emptyFilters)}>
+      <button type="button" className="btn btn-secondary" onClick={() => onChange(emptyFilters)}>
         Limpiar filtros
       </button>
     </form>

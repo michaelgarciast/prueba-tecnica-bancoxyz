@@ -23,19 +23,23 @@ export default function BalanceCard() {
   let content: ReactNode;
   if (error) {
     content = (
-      <p className="alert alert-error" role="alert">
+      <p className="alert-error" role="alert">
         {error}
       </p>
     );
   } else if (balance) {
-    content = <p className="balance">{formatCurrency(balance.accountBalance, balance.currency)}</p>;
+    content = (
+      <p className="text-3xl font-semibold tabular-nums text-slate-900">
+        {formatCurrency(balance.accountBalance, balance.currency)}
+      </p>
+    );
   } else {
     content = <p className="loading">Cargando...</p>;
   }
 
   return (
     <section className="card">
-      <h2 className="balance-label">Saldo disponible</h2>
+      <h2 className="mb-1 text-sm font-medium text-slate-500">Saldo disponible</h2>
       {content}
     </section>
   );

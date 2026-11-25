@@ -1,7 +1,7 @@
-import { FormEvent, useState } from 'react';
+import { SubmitEvent, useState } from 'react';
 import { ApiError, createTransfer } from '../api';
 import { useAuth } from '../auth/AuthContext';
-import { formatDate, todayLocal } from '../utils/format';
+import { formatCurrency, formatDate, todayLocal } from '../utils/format';
 import { saveLocalTransfer, spentLocalTransfers } from '../utils/localTransfers';
 
 interface Props {
@@ -16,7 +16,7 @@ interface FormError {
   message: string;
 }
 
-export default function TransferForm({ currency, accountBalance }: Props) {
+export default function TransferForm({ currency, accountBalance }: Readonly<Props>) {
   const { user } = useAuth();
   const [value, setValue] = useState('');
   const [document, setDocument] = useState('');
@@ -24,13 +24,13 @@ export default function TransferForm({ currency, accountBalance }: Props) {
   const [error, setError] = useState<FormError | null>(null);
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const availableBalance = accountBalance - (user ? spentLocalTransfers(user.id) : 0);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess('');
     const amount = Number(value);
-    const availableBalance = accountBalance - (user ? spentLocalTransfers(user.id) : 0);
     if (amount <= 0) return setError({ field: 'value', message: 'El valor debe ser mayor a 0' });
     if (amount > availableBalance)
       return setError({ field: 'value', message: 'El valor excede el saldo disponible' });
@@ -71,8 +71,13 @@ export default function TransferForm({ currency, accountBalance }: Props) {
     }
   };
 
-  const fieldProps = (field: Field) =>
-    error?.field === field ? { 'aria-invalid': true, 'aria-describedby': `${field}-error` } : {};
+  const fieldProps = (field: Field, hintId?: string) => {
+    const invalid = error?.field === field;
+    return {
+      'aria-invalid': invalid || undefined,
+      'aria-describedby': (invalid ? `${field}-error` : hintId) || undefined,
+    };
+  };
 
   const fieldError = (field: Field) =>
     error?.field === field && (
@@ -82,10 +87,11 @@ export default function TransferForm({ currency, accountBalance }: Props) {
     );
 
   return (
-    <form className="card form" onSubmit={handleSubmit} noValidate>
+    <form className="card flex max-w-lg flex-col gap-4" onSubmit={handleSubmit} noValidate>
       <div className="field">
         <label htmlFor="transfer-value">Valor ({currency})</label>
         <input
+          className="input"
           id="transfer-value"
           name="value"
           type="number"
@@ -94,13 +100,18 @@ export default function TransferForm({ currency, accountBalance }: Props) {
           inputMode="decimal"
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          {...fieldProps('value')}
+          {...fieldProps('value', 'value-hint')}
         />
-        {fieldError('value')}
+        {fieldError('value') || (
+          <p id="value-hint" className="hint">
+            Disponible: {formatCurrency(availableBalance, currency)}
+          </p>
+        )}
       </div>
       <div className="field">
         <label htmlFor="transfer-document">Documento del destinatario</label>
         <input
+          className="input"
           id="transfer-document"
           name="payeerDocument"
           value={document}
@@ -112,27 +123,32 @@ export default function TransferForm({ currency, accountBalance }: Props) {
       <div className="field">
         <label htmlFor="transfer-date">Fecha</label>
         <input
+          className="input"
           id="transfer-date"
           name="transferDate"
           type="date"
           min={todayLocal()}
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          {...fieldProps('date')}
+          {...fieldProps('date', 'date-hint')}
         />
-        {fieldError('date')}
+        {fieldError('date') || (
+          <p id="date-hint" className="hint">
+            Hoy se envía de inmediato; elige una fecha futura para agendarla.
+          </p>
+        )}
       </div>
       {error && !error.field && (
-        <p className="alert alert-error" role="alert">
+        <p className="alert-error" role="alert">
           {error.message}
         </p>
       )}
       {success && (
-        <p className="alert alert-success" role="status">
+        <p className="alert-success" role="status">
           {success}
         </p>
       )}
-      <button type="submit" disabled={loading}>
+      <button type="submit" className="btn" disabled={loading}>
         {loading ? 'Enviando...' : 'Transferir'}
       </button>
     </form>
