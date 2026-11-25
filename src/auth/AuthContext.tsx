@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import * as api from '../api';
 
 interface Session {
@@ -9,6 +9,7 @@ interface Session {
 interface AuthContextValue {
   user: api.User | null;
   isAuthenticated: boolean;
+  sessionExpired: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
 }
@@ -27,8 +28,9 @@ function loadSession(): Session | null {
   }
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [session, setSession] = useState<Session | null>(loadSession);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const signOut = useCallback(() => {
     api.setToken(null);
@@ -37,20 +39,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    api.setUnauthorizedHandler(signOut);
+    api.setUnauthorizedHandler(() => {
+      signOut();
+      setSessionExpired(true);
+    });
   }, [signOut]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const { token, user } = await api.login(email, password);
     api.setToken(token);
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, user }));
+    setSessionExpired(false);
     setSession({ token, user });
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({ user: session?.user ?? null, isAuthenticated: !!session, sessionExpired, signIn, signOut }),
+    [session, sessionExpired, signIn, signOut]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{ user: session?.user ?? null, isAuthenticated: !!session, signIn, signOut }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

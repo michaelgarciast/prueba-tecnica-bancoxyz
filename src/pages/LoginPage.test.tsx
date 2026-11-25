@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import App from '../App';
@@ -9,14 +9,15 @@ jest.mock('../api', () => ({
   ...jest.requireActual('../api'),
   login: jest.fn(),
   getBalance: jest.fn(),
+  setUnauthorizedHandler: jest.fn(),
 }));
 
 const mockedApi = api as jest.Mocked<typeof api>;
 
-const renderLogin = () =>
+const renderLogin = (path = '/login') =>
   render(
     <MemoryRouter
-      initialEntries={['/login']}
+      initialEntries={[path]}
       future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
     >
       <AuthProvider>
@@ -54,4 +55,17 @@ test('redirects to home with valid credentials', async () => {
   fillAndSubmit();
   await waitFor(() => expect(screen.getByRole('heading', { name: 'Inicio' })).toBeInTheDocument());
   expect(mockedApi.login).toHaveBeenCalledWith('gabriel@topaz.com', '1111');
+});
+
+test('tells the user when the session expired', async () => {
+  localStorage.setItem(
+    'session',
+    JSON.stringify({ token: 'old', user: { id: 1, name: 'Gabriel', email: 'gabriel@topaz.com' } })
+  );
+  mockedApi.getBalance.mockReturnValue(new Promise(() => {}));
+  renderLogin('/');
+  const onUnauthorized = mockedApi.setUnauthorizedHandler.mock.calls[0][0];
+  act(() => onUnauthorized());
+  expect(await screen.findByRole('status')).toHaveTextContent('Tu sesión expiró');
+  expect(screen.getByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument();
 });

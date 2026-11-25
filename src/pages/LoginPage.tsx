@@ -3,7 +3,7 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 
 export default function LoginPage() {
-  const { isAuthenticated, signIn } = useAuth();
+  const { isAuthenticated, sessionExpired, signIn } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,6 +32,11 @@ export default function LoginPage() {
         <p className="mb-6 text-center text-sm text-slate-500">Banca en línea</p>
         <div className="card">
           <h1 className="text-xl">Iniciar sesión</h1>
+          {sessionExpired && !error && (
+            <p className="alert-info mb-4" role="status">
+              Tu sesión expiró. Vuelve a ingresar.
+            </p>
+          )}
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <label className="field">
               <span>Correo electrónico</span>
