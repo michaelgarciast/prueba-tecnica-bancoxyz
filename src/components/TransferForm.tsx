@@ -1,5 +1,5 @@
 import { SubmitEvent, useState } from 'react';
-import { createTransfer } from '../api';
+import { TransferRequest, createTransfer } from '../api';
 import { useAuth } from '../auth/AuthContext';
 import { formatCurrency, formatDate, todayLocal } from '../utils/format';
 import { saveLocalTransfer, spentLocalTransfers } from '../utils/localTransfers';
@@ -24,29 +24,41 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
   const [error, setError] = useState<FormError | null>(null);
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pending, setPending] = useState<TransferRequest | null>(null);
   const today = todayLocal();
+  const amount = Number(value);
   const availableBalance = accountBalance - (user ? spentLocalTransfers(user.id) : 0);
 
-  const handleSubmit = async (e: SubmitEvent) => {
+  const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess('');
-    const amount = Number(value);
     const doc = payeerDocument.trim();
     if (amount <= 0) return setError({ field: 'value', message: 'El valor debe ser mayor a 0' });
     if (amount > availableBalance)
       return setError({ field: 'value', message: 'El valor excede el saldo disponible' });
     if (!doc) return setError({ field: 'document', message: 'El documento del destinatario es requerido' });
     if (date < today) return setError({ field: 'date', message: 'La fecha no puede ser pasada' });
+    setPending({ value: amount, currency, payeerDocument: doc, transferDate: date });
+  };
 
+  const confirm = async (transfer: TransferRequest) => {
     setLoading(true);
     try {
-      const res = await createTransfer({ value: amount, currency, payeerDocument: doc, transferDate: date });
+      const res = await createTransfer(transfer);
       if (res.status === 'error') throw new Error(res.message);
+      const { payeerDocument: doc, transferDate } = transfer;
       if (user)
-        saveLocalTransfer(user.id, { value: amount, date, currency, payeer: { document: doc, name: doc } });
+        saveLocalTransfer(user.id, {
+          value: transfer.value,
+          date: transferDate,
+          currency,
+          payeer: { document: doc, name: doc },
+        });
       setSuccess(
-        date > today ? `Transferencia agendada para el ${formatDate(date)}` : 'Transferencia realizada con éxito'
+        transferDate > today
+          ? `Transferencia agendada para el ${formatDate(transferDate)}`
+          : 'Transferencia realizada con éxito'
       );
       setValue('');
       setPayeerDocument('');
@@ -55,8 +67,36 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
       setError({ message: 'No se pudo realizar la transferencia. Revisa los datos e intenta de nuevo.' });
     } finally {
       setLoading(false);
+      setPending(null);
     }
   };
+
+  if (pending) {
+    const scheduled = pending.transferDate > today;
+    return (
+      <section className="card flex max-w-lg flex-col gap-4" aria-labelledby="confirm-title">
+        <h2 id="confirm-title" className="text-lg font-semibold">
+          Confirma la transferencia
+        </h2>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2">
+          <dt className="text-slate-500">Valor</dt>
+          <dd className="font-semibold tabular-nums">{formatCurrency(pending.value, currency)}</dd>
+          <dt className="text-slate-500">Destinatario</dt>
+          <dd>{pending.payeerDocument}</dd>
+          <dt className="text-slate-500">Fecha</dt>
+          <dd>{scheduled ? `${formatDate(pending.transferDate)} (agendada)` : 'Hoy (inmediata)'}</dd>
+        </dl>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button type="button" className="btn" disabled={loading} onClick={() => confirm(pending)} autoFocus>
+            {loading ? 'Enviando...' : 'Confirmar'}
+          </button>
+          <button type="button" className="btn btn-secondary" disabled={loading} onClick={() => setPending(null)}>
+            Editar
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   const fieldProps = (field: Field, hintId?: string) => {
     const invalid = error?.field === field;
@@ -91,6 +131,7 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
         />
         {fieldError('value') || (
           <p id="value-hint" className="hint">
+            {amount > 0 && `${formatCurrency(amount, currency)} · `}
             Disponible: {formatCurrency(availableBalance, currency)}
           </p>
         )}
@@ -101,6 +142,8 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
           className="input"
           id="transfer-document"
           name="payeerDocument"
+          inputMode="numeric"
+          autoComplete="off"
           value={payeerDocument}
           onChange={(e) => setPayeerDocument(e.target.value)}
           {...fieldProps('document')}
@@ -135,8 +178,8 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
           {success}
         </p>
       )}
-      <button type="submit" className="btn" disabled={loading}>
-        {loading ? 'Enviando...' : 'Transferir'}
+      <button type="submit" className="btn">
+        Transferir
       </button>
     </form>
   );
