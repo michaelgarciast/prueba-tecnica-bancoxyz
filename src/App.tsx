@@ -3,6 +3,7 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import TransferPage from './pages/TransferPage';
 
 function Layout() {
   return (
@@ -20,6 +21,7 @@ function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/transfer" element={<TransferPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
