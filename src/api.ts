@@ -1,5 +1,7 @@
 export interface User {
-  [key: string]: unknown;
+  id: number;
+  name: string;
+  email: string;
 }
 
 export interface LoginResponse {
