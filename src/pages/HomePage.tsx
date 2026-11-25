@@ -1,3 +1,10 @@
+import BalanceCard from '../components/BalanceCard';
+
 export default function HomePage() {
-  return <h1>Inicio</h1>;
+  return (
+    <main>
+      <h1>Inicio</h1>
+      <BalanceCard />
+    </main>
+  );
 }
