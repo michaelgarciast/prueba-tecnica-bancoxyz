@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { BalanceResponse, getBalance } from '../api';
 import { useAuth } from '../auth/AuthContext';
 import { formatCurrency } from '../utils/format';
@@ -20,18 +20,23 @@ export default function BalanceCard() {
       .catch(() => setError('No se pudo cargar el saldo'));
   }, [user]);
 
+  let content: ReactNode;
+  if (error) {
+    content = (
+      <p className="alert alert-error" role="alert">
+        {error}
+      </p>
+    );
+  } else if (balance) {
+    content = <p className="balance">{formatCurrency(balance.accountBalance, balance.currency)}</p>;
+  } else {
+    content = <p className="loading">Cargando...</p>;
+  }
+
   return (
     <section className="card">
       <h2 className="balance-label">Saldo disponible</h2>
-      {error ? (
-        <p className="alert alert-error" role="alert">
-          {error}
-        </p>
-      ) : balance ? (
-        <p className="balance">{formatCurrency(balance.accountBalance, balance.currency)}</p>
-      ) : (
-        <p className="loading">Cargando...</p>
-      )}
+      {content}
     </section>
   );
 }

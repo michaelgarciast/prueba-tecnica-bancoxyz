@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { BalanceResponse, getBalance } from '../api';
 import { useAuth } from '../auth/AuthContext';
 import TransferForm from '../components/TransferForm';
@@ -19,18 +19,25 @@ export default function TransferPage() {
     ? balance.accountBalance - (user ? spentLocalTransfers(user.id) : 0)
     : 0;
 
+  let content: ReactNode;
+  if (error) {
+    content = (
+      <p className="alert alert-error" role="alert">
+        {error}
+      </p>
+    );
+  } else if (balance) {
+    content = (
+      <TransferForm currency={balance.currency} availableBalance={availableBalance} />
+    );
+  } else {
+    content = <p className="loading">Cargando...</p>;
+  }
+
   return (
     <main>
       <h1>Transferir</h1>
-      {error ? (
-        <p className="alert alert-error" role="alert">
-          {error}
-        </p>
-      ) : balance ? (
-        <TransferForm currency={balance.currency} availableBalance={availableBalance} />
-      ) : (
-        <p className="loading">Cargando...</p>
-      )}
+      {content}
     </main>
   );
 }
