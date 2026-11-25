@@ -15,7 +15,10 @@ const mockedApi = api as jest.Mocked<typeof api>;
 
 const renderLogin = () =>
   render(
-    <MemoryRouter initialEntries={['/login']}>
+    <MemoryRouter
+      initialEntries={['/login']}
+      future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+    >
       <AuthProvider>
         <App />
       </AuthProvider>

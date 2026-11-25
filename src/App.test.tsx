@@ -5,7 +5,7 @@ import { AuthProvider } from './auth/AuthContext';
 
 test('redirects to login when there is no session', () => {
   render(
-    <MemoryRouter>
+    <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <App />
       </AuthProvider>
