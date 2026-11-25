@@ -34,7 +34,7 @@ pnpm start
 
 Abre [http://localhost:3000](http://localhost:3000).
 
-> Los endpoints de la API no envían cabeceras CORS, así que el servidor de desarrollo los reenvía desde `/api/*` (ver `src/setupProxy.js`, que solo permite las 4 rutas de la prueba). Por eso la app debe ejecutarse con `pnpm start`. Un `pnpm build` servido como estático necesitaría un proxy equivalente.
+> Los endpoints de la API no envían cabeceras CORS, así que el servidor de desarrollo los reenvía desde `/api/*` (ver `src/setupProxy.js`, que solo permite las 4 rutas de la prueba). Por eso la app debe ejecutarse con `pnpm start`. Un `pnpm build` servido como estático necesitaría un proxy equivalente. El porqué de este enfoque está en [Decisiones técnicas](#decisiones-técnicas).
 
 ## Tests
 
@@ -68,6 +68,7 @@ src/
 
 - **Context solo para auth:** es el único estado compartido; el resto vive en cada página.
 - **`fetch` sin Axios:** un helper agrega el token `Bearer`, lanza error si la respuesta no es OK y cierra la sesión ante un 401.
+- **Proxy de desarrollo con `node:https` (sin `http-proxy-middleware`):** para 4 rutas fijas no hace falta otra dependencia. Así el proxy reenvía solo una lista blanca de rutas (las demás → 404) y de cabeceras (`content-type`, `content-length`, `authorization`), corta a los 10 s y responde 502 con un mensaje que la UI muestra. Es solo para desarrollo: en producción, CORS se resuelve en la API o con un reverse proxy.
 - **Sesión en `localStorage`:** sobrevive al refresh.
 - **Filtros en el cliente:** la API no los ofrece. Están en una función pura (`filterTransfers`) testeada por separado.
 - **Fechas en hora local:** "hoy" se calcula en formato `YYYY-MM-DD` local (no con `toISOString()`, que usa UTC).
