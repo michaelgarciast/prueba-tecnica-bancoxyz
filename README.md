@@ -1,46 +1,81 @@
-# Getting Started with Create React App
+# BancoXYZ – Prueba técnica React
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Aplicación de banca en línea: login, consulta de saldo, transferencias (inmediatas o agendadas a una fecha futura) e historial con filtros por destinatario, valor y fecha.
 
-## Available Scripts
+## Stack
 
-In the project directory, you can run:
+- Create React App + TypeScript
+- React Router (única dependencia extra)
+- `fetch` nativo con un helper `request()` tipado
+- Context API para la sesión; estado local en el resto
+- CSS plano en `src/index.css`
+- Jest + React Testing Library (incluidos en CRA)
 
-### `npm start`
+## Requisitos
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- Node.js 18 o superior
+- pnpm (la versión está fijada en `packageManager` de `package.json`). Para activarlo:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```bash
+corepack enable
+```
 
-### `npm test`
+## Instalación
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```bash
+pnpm install
+```
 
-### `npm run build`
+## Ejecución
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+pnpm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Abre [http://localhost:3000](http://localhost:3000).
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+> Los endpoints de la API no envían cabeceras CORS, así que el servidor de desarrollo los reenvía desde `/api/*` (ver `src/setupProxy.js`, que solo permite las 4 rutas de la prueba). Por eso la app debe ejecutarse con `pnpm start`. Un `pnpm build` servido como estático necesitaría un proxy equivalente.
 
-### `npm run eject`
+## Tests
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```bash
+pnpm test           # modo watch
+CI=true pnpm test   # una sola ejecución
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Cubren: login (válido e inválido), redirección sin sesión, saldo (éxito, error y descuento de transferencias), formulario de transferencia (validaciones, body enviado, fecha agendada, saldo insuficiente) y la función de filtros.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## Usuarios de prueba
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+| Email | Contraseña |
+|---|---|
+| gabriel@topaz.com | 1111 |
+| alejo@topaz.com | 2222 |
+| wilson@topaz.com | 3333 |
 
-## Learn More
+## Estructura
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```
+src/
+  api.ts         URLs, tipos y llamadas a la API
+  auth/          AuthContext y ProtectedRoute
+  pages/         Login, Inicio, Transferir, Historial
+  components/    Navbar, BalanceCard, TransferForm, TransferFilters
+  utils/         formato, filtros y transferencias locales
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Decisiones técnicas
+
+- **Context solo para auth:** es el único estado compartido; el resto vive en cada página.
+- **`fetch` sin Axios:** un helper agrega el token `Bearer`, lanza error si la respuesta no es OK y cierra la sesión ante un 401.
+- **Sesión en `localStorage`:** sobrevive al refresh.
+- **Filtros en el cliente:** la API no los ofrece. Están en una función pura (`filterTransfers`) testeada por separado.
+- **Fechas en hora local:** "hoy" se calcula en formato `YYYY-MM-DD` local (no con `toISOString()`, que usa UTC).
+- **Transferencias locales:** la API no persiste las transferencias creadas (`/transferList` siempre devuelve los mismos datos y `/balance` no cambia). Para que el flujo crear → listar sea demostrable, cada transferencia exitosa se guarda en `localStorage` por usuario: aparece en el historial, y las que ya están vencidas se descuentan del saldo mostrado y del disponible para transferir.
+
+## Mejoras futuras
+
+- Guardar el token en una cookie `httpOnly` emitida por el backend, en lugar de `localStorage`.
+- Persistir las transferencias en el servidor y eliminar la capa local.
+- Descontar también las transferencias agendadas del saldo disponible.
+- Paginación y filtros en el servidor para historiales grandes.
