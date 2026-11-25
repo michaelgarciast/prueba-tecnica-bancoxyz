@@ -6,6 +6,7 @@ import { saveLocalTransfer } from '../utils/localTransfers';
 
 interface Props {
   currency: string;
+  availableBalance: number;
 }
 
 type Field = 'value' | 'document' | 'date';
@@ -15,7 +16,7 @@ interface FormError {
   message: string;
 }
 
-export default function TransferForm({ currency }: Props) {
+export default function TransferForm({ currency, availableBalance }: Props) {
   const { user } = useAuth();
   const [value, setValue] = useState('');
   const [document, setDocument] = useState('');
@@ -29,7 +30,9 @@ export default function TransferForm({ currency }: Props) {
     setError(null);
     setSuccess('');
     const amount = Number(value);
-    if (!(amount > 0)) return setError({ field: 'value', message: 'El valor debe ser mayor a 0' });
+    if (amount <= 0) return setError({ field: 'value', message: 'El valor debe ser mayor a 0' });
+    if (amount > availableBalance)
+      return setError({ field: 'value', message: 'El valor excede el saldo disponible' });
     if (!document.trim())
       return setError({ field: 'document', message: 'El documento del destinatario es requerido' });
     if (date < todayLocal()) return setError({ field: 'date', message: 'La fecha no puede ser pasada' });

@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
-import { getBalance } from '../api';
+import { BalanceResponse, getBalance } from '../api';
+import { useAuth } from '../auth/AuthContext';
 import TransferForm from '../components/TransferForm';
+import { spentLocalTransfers } from '../utils/localTransfers';
 
 export default function TransferPage() {
-  const [currency, setCurrency] = useState('');
+  const { user } = useAuth();
+  const [balance, setBalance] = useState<BalanceResponse | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     getBalance()
-      .then((b) => setCurrency(b.currency))
+      .then(setBalance)
       .catch(() => setError('No se pudo cargar la moneda de la cuenta'));
   }, []);
+
+  const availableBalance = balance
+    ? balance.accountBalance - (user ? spentLocalTransfers(user.id) : 0)
+    : 0;
 
   return (
     <main>
@@ -19,8 +26,8 @@ export default function TransferPage() {
         <p className="alert alert-error" role="alert">
           {error}
         </p>
-      ) : currency ? (
-        <TransferForm currency={currency} />
+      ) : balance ? (
+        <TransferForm currency={balance.currency} availableBalance={availableBalance} />
       ) : (
         <p className="loading">Cargando...</p>
       )}
