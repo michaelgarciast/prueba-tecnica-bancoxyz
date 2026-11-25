@@ -2,11 +2,11 @@ import { FormEvent, useState } from 'react';
 import { ApiError, createTransfer } from '../api';
 import { useAuth } from '../auth/AuthContext';
 import { formatDate, todayLocal } from '../utils/format';
-import { saveLocalTransfer } from '../utils/localTransfers';
+import { saveLocalTransfer, spentLocalTransfers } from '../utils/localTransfers';
 
 interface Props {
   currency: string;
-  availableBalance: number;
+  accountBalance: number;
 }
 
 type Field = 'value' | 'document' | 'date';
@@ -16,7 +16,7 @@ interface FormError {
   message: string;
 }
 
-export default function TransferForm({ currency, availableBalance }: Props) {
+export default function TransferForm({ currency, accountBalance }: Props) {
   const { user } = useAuth();
   const [value, setValue] = useState('');
   const [document, setDocument] = useState('');
@@ -30,6 +30,7 @@ export default function TransferForm({ currency, availableBalance }: Props) {
     setError(null);
     setSuccess('');
     const amount = Number(value);
+    const availableBalance = accountBalance - (user ? spentLocalTransfers(user.id) : 0);
     if (amount <= 0) return setError({ field: 'value', message: 'El valor debe ser mayor a 0' });
     if (amount > availableBalance)
       return setError({ field: 'value', message: 'El valor excede el saldo disponible' });

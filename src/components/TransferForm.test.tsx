@@ -26,7 +26,7 @@ const fill = (value: string, document = '123') => {
 };
 
 test('does not submit when the value is not greater than 0', () => {
-  render(<TransferForm currency="COP" availableBalance={10000} />);
+  render(<TransferForm currency="COP" accountBalance={10000} />);
   fill('0');
   userEvent.click(screen.getByRole('button', { name: 'Transferir' }));
   expect(screen.getByRole('alert')).toHaveTextContent('El valor debe ser mayor a 0');
@@ -35,7 +35,7 @@ test('does not submit when the value is not greater than 0', () => {
 
 test('sends the correct body for an immediate transfer', async () => {
   mockedCreateTransfer.mockResolvedValue({ status: 'success' });
-  render(<TransferForm currency="COP" availableBalance={10000} />);
+  render(<TransferForm currency="COP" accountBalance={10000} />);
   fill('500', ' 999 ');
   userEvent.click(screen.getByRole('button', { name: 'Transferir' }));
   expect(await screen.findByRole('status')).toHaveTextContent('Transferencia realizada con éxito');
@@ -51,16 +51,28 @@ test('sends the correct body for an immediate transfer', async () => {
 });
 
 test('does not submit when the value exceeds the available balance', () => {
-  render(<TransferForm currency="COP" availableBalance={100} />);
+  render(<TransferForm currency="COP" accountBalance={100} />);
   fill('500');
   userEvent.click(screen.getByRole('button', { name: 'Transferir' }));
   expect(screen.getByRole('alert')).toHaveTextContent('El valor excede el saldo disponible');
   expect(mockedCreateTransfer).not.toHaveBeenCalled();
 });
 
+test('counts previous transfers against the available balance', async () => {
+  mockedCreateTransfer.mockResolvedValue({ status: 'success' });
+  render(<TransferForm currency="COP" accountBalance={1000} />);
+  fill('800');
+  userEvent.click(screen.getByRole('button', { name: 'Transferir' }));
+  await screen.findByRole('status');
+  fill('800');
+  userEvent.click(screen.getByRole('button', { name: 'Transferir' }));
+  expect(screen.getByRole('alert')).toHaveTextContent('El valor excede el saldo disponible');
+  expect(mockedCreateTransfer).toHaveBeenCalledTimes(1);
+});
+
 test('sends the future date for a scheduled transfer', async () => {
   mockedCreateTransfer.mockResolvedValue({ status: 'success' });
-  render(<TransferForm currency="COP" availableBalance={10000} />);
+  render(<TransferForm currency="COP" accountBalance={10000} />);
   fill('100');
   fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2999-01-31' } });
   userEvent.click(screen.getByRole('button', { name: 'Transferir' }));
