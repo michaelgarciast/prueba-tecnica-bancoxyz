@@ -44,7 +44,7 @@ export class ApiError extends Error {
   }
 }
 
-// Relative paths: src/setupProxy.js forwards them to the API Gateway, which has no CORS.
+// Rutas relativas: src/setupProxy.js las reenvía a la API (no tiene CORS).
 const URLS = {
   login: '/api/login',
   balance: '/api/balance',
@@ -72,7 +72,7 @@ async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
 
   if (!res.ok) {
     if (res.status === 401 && token) onUnauthorized();
-    throw new ApiError(res.status, data.message ?? 'Error de red');
+    throw new ApiError(res.status, data.message ?? res.statusText);
   }
   return data as T;
 }

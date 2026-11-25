@@ -1,5 +1,5 @@
 import { SubmitEvent, useState } from 'react';
-import { ApiError, createTransfer } from '../api';
+import { createTransfer } from '../api';
 import { useAuth } from '../auth/AuthContext';
 import { formatCurrency, formatDate, todayLocal } from '../utils/format';
 import { saveLocalTransfer, spentLocalTransfers } from '../utils/localTransfers';
@@ -19,11 +19,12 @@ interface FormError {
 export default function TransferForm({ currency, accountBalance }: Readonly<Props>) {
   const { user } = useAuth();
   const [value, setValue] = useState('');
-  const [document, setDocument] = useState('');
+  const [payeerDocument, setPayeerDocument] = useState('');
   const [date, setDate] = useState(todayLocal());
   const [error, setError] = useState<FormError | null>(null);
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const today = todayLocal();
   const availableBalance = accountBalance - (user ? spentLocalTransfers(user.id) : 0);
 
   const handleSubmit = async (e: SubmitEvent) => {
@@ -31,41 +32,27 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
     setError(null);
     setSuccess('');
     const amount = Number(value);
+    const doc = payeerDocument.trim();
     if (amount <= 0) return setError({ field: 'value', message: 'El valor debe ser mayor a 0' });
     if (amount > availableBalance)
       return setError({ field: 'value', message: 'El valor excede el saldo disponible' });
-    if (!document.trim())
-      return setError({ field: 'document', message: 'El documento del destinatario es requerido' });
-    if (date < todayLocal()) return setError({ field: 'date', message: 'La fecha no puede ser pasada' });
+    if (!doc) return setError({ field: 'document', message: 'El documento del destinatario es requerido' });
+    if (date < today) return setError({ field: 'date', message: 'La fecha no puede ser pasada' });
 
     setLoading(true);
     try {
-      const res = await createTransfer({
-        value: amount,
-        currency,
-        payeerDocument: document.trim(),
-        transferDate: date,
-      });
-      if (res.status === 'error') throw new ApiError(400, res.message ?? '');
+      const res = await createTransfer({ value: amount, currency, payeerDocument: doc, transferDate: date });
+      if (res.status === 'error') throw new Error(res.message);
       if (user)
-        saveLocalTransfer(user.id, {
-          value: amount,
-          date,
-          currency,
-          payeer: { document: document.trim(), name: document.trim() },
-        });
+        saveLocalTransfer(user.id, { value: amount, date, currency, payeer: { document: doc, name: doc } });
       setSuccess(
-        date > todayLocal()
-          ? `Transferencia agendada para el ${formatDate(date)}`
-          : 'Transferencia realizada con éxito'
+        date > today ? `Transferencia agendada para el ${formatDate(date)}` : 'Transferencia realizada con éxito'
       );
       setValue('');
-      setDocument('');
-      setDate(todayLocal());
-    } catch (err) {
-      setError({
-        message: err instanceof ApiError && err.message ? err.message : 'No se pudo realizar la transferencia',
-      });
+      setPayeerDocument('');
+      setDate(today);
+    } catch {
+      setError({ message: 'No se pudo realizar la transferencia. Revisa los datos e intenta de nuevo.' });
     } finally {
       setLoading(false);
     }
@@ -114,8 +101,8 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
           className="input"
           id="transfer-document"
           name="payeerDocument"
-          value={document}
-          onChange={(e) => setDocument(e.target.value)}
+          value={payeerDocument}
+          onChange={(e) => setPayeerDocument(e.target.value)}
           {...fieldProps('document')}
         />
         {fieldError('document')}
@@ -127,7 +114,7 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
           id="transfer-date"
           name="transferDate"
           type="date"
-          min={todayLocal()}
+          min={today}
           value={date}
           onChange={(e) => setDate(e.target.value)}
           {...fieldProps('date', 'date-hint')}

@@ -58,6 +58,16 @@ test('does not submit when the value exceeds the available balance', () => {
   expect(mockedCreateTransfer).not.toHaveBeenCalled();
 });
 
+test('shows an error and keeps the form when the api rejects the transfer', async () => {
+  mockedCreateTransfer.mockResolvedValue({ status: 'error', message: 'Bad request' });
+  render(<TransferForm currency="COP" accountBalance={10000} />);
+  fill('100');
+  userEvent.click(screen.getByRole('button', { name: 'Transferir' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo realizar la transferencia');
+  expect(screen.getByLabelText(/Valor/)).toHaveValue(100);
+  expect(localStorage.getItem('transfers:1')).toBeNull();
+});
+
 test('counts previous transfers against the available balance', async () => {
   mockedCreateTransfer.mockResolvedValue({ status: 'success' });
   render(<TransferForm currency="COP" accountBalance={1000} />);

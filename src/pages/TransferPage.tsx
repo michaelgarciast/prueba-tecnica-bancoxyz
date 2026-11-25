@@ -9,7 +9,7 @@ export default function TransferPage() {
   useEffect(() => {
     getBalance()
       .then(setBalance)
-      .catch(() => setError('No se pudo cargar la moneda de la cuenta'));
+      .catch(() => setError('No se pudo cargar el saldo de la cuenta'));
   }, []);
 
   let content: ReactNode;

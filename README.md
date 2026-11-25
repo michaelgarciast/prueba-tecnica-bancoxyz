@@ -43,7 +43,7 @@ pnpm test           # modo watch
 CI=true pnpm test   # una sola ejecución
 ```
 
-Cubren: login (válido e inválido), redirección sin sesión, saldo (éxito, error y descuento de transferencias), formulario de transferencia (validaciones, body enviado, fecha agendada, saldo insuficiente) y la función de filtros.
+Cubren: login (válido e inválido), redirección sin sesión, saldo (éxito, error y descuento de transferencias), formulario de transferencia (validaciones, body enviado, fecha agendada, saldo insuficiente, error de la API) y la función de filtros.
 
 ## Usuarios de prueba
 

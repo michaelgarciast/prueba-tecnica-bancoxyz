@@ -1,7 +1,7 @@
-const https = require('https');
+const https = require('node:https');
 
-// The API Gateway endpoints send no CORS headers (OPTIONS fails), so the CRA dev server
-// forwards these fixed routes server-side. Only this whitelist is proxied: never an open proxy.
+// La API no envía cabeceras CORS, así que el servidor de desarrollo de CRA
+// reenvía solo estas rutas fijas.
 const TARGETS = {
   '/api/login': 'https://qf5k9fspl0.execute-api.us-east-1.amazonaws.com/default/login',
   '/api/balance': 'https://2k0ic4z7s5.execute-api.us-east-1.amazonaws.com/default/balance',
@@ -11,7 +11,7 @@ const TARGETS = {
 
 const FORWARDED_HEADERS = ['content-type', 'content-length', 'authorization'];
 
-module.exports = (app) => {
+module.exports = function setupProxy(app) {
   app.use('/api', (req, res) => {
     const target = TARGETS[req.originalUrl.split('?')[0]];
     if (!target) return res.writeHead(404).end();
