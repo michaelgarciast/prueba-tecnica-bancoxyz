@@ -14,7 +14,11 @@ export default function TransferListPage() {
 
   useEffect(() => {
     getTransfers()
-      .then((r) => setTransfers([...(user ? loadLocalTransfers(user.id) : []), ...r.transfers]))
+      .then((r) => {
+        const all = [...(user ? loadLocalTransfers(user.id) : []), ...r.transfers];
+        all.sort((a, b) => b.date.localeCompare(a.date));
+        setTransfers(all);
+      })
       .catch(() => setError('No se pudo cargar el historial'));
   }, [user]);
 
