@@ -1,19 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Transfer, getTransfers } from '../api';
+import { useAuth } from '../auth/AuthContext';
 import TransferFilters from '../components/TransferFilters';
 import { emptyFilters, filterTransfers } from '../utils/filterTransfers';
 import { formatCurrency, formatDate } from '../utils/format';
+import { loadLocalTransfers } from '../utils/localTransfers';
 
 export default function TransferListPage() {
+  const { user } = useAuth();
   const [transfers, setTransfers] = useState<Transfer[] | null>(null);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState(emptyFilters);
 
   useEffect(() => {
     getTransfers()
-      .then((r) => setTransfers(r.transfers))
+      .then((r) => setTransfers([...(user ? loadLocalTransfers(user.id) : []), ...r.transfers]))
       .catch(() => setError('No se pudo cargar el historial'));
-  }, []);
+  }, [user]);
 
   const filtered = useMemo(() => filterTransfers(transfers ?? [], filters), [transfers, filters]);
 

@@ -9,9 +9,16 @@ jest.mock('../api', () => ({
   createTransfer: jest.fn(),
 }));
 
+jest.mock('../auth/AuthContext', () => ({
+  useAuth: () => ({ user: { id: 1, name: 'Gabriel', email: 'gabriel@topaz.com' } }),
+}));
+
 const mockedCreateTransfer = createTransfer as jest.MockedFunction<typeof createTransfer>;
 
-beforeEach(() => jest.resetAllMocks());
+beforeEach(() => {
+  jest.resetAllMocks();
+  localStorage.clear();
+});
 
 const fill = (value: string, document = '123') => {
   userEvent.type(screen.getByLabelText(/Valor/), value);
@@ -38,6 +45,9 @@ test('sends the correct body for an immediate transfer', async () => {
     payeerDocument: '999',
     transferDate: todayLocal(),
   });
+  expect(JSON.parse(localStorage.getItem('transfers:1') ?? '[]')).toEqual([
+    expect.objectContaining({ value: 500, payeer: { document: '999', name: '999' } }),
+  ]);
 });
 
 test('sends the future date for a scheduled transfer', async () => {

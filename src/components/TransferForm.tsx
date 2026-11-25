@@ -1,6 +1,8 @@
 import { FormEvent, useState } from 'react';
 import { ApiError, createTransfer } from '../api';
+import { useAuth } from '../auth/AuthContext';
 import { formatDate, todayLocal } from '../utils/format';
+import { saveLocalTransfer } from '../utils/localTransfers';
 
 interface Props {
   currency: string;
@@ -14,6 +16,7 @@ interface FormError {
 }
 
 export default function TransferForm({ currency }: Props) {
+  const { user } = useAuth();
   const [value, setValue] = useState('');
   const [document, setDocument] = useState('');
   const [date, setDate] = useState(todayLocal());
@@ -40,6 +43,13 @@ export default function TransferForm({ currency }: Props) {
         transferDate: date,
       });
       if (res.status === 'error') throw new ApiError(400, res.message ?? '');
+      if (user)
+        saveLocalTransfer(user.id, {
+          value: amount,
+          date,
+          currency,
+          payeer: { document: document.trim(), name: document.trim() },
+        });
       setSuccess(
         date > todayLocal()
           ? `Transferencia agendada para el ${formatDate(date)}`
