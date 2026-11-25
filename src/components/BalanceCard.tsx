@@ -14,13 +14,15 @@ export default function BalanceCard() {
 
   return (
     <section className="card">
-      <h2>Saldo disponible</h2>
+      <h2 className="balance-label">Saldo disponible</h2>
       {error ? (
-        <p role="alert">{error}</p>
+        <p className="alert alert-error" role="alert">
+          {error}
+        </p>
       ) : balance ? (
         <p className="balance">{formatCurrency(balance.accountBalance, balance.currency)}</p>
       ) : (
-        <p>Cargando...</p>
+        <p className="loading">Cargando...</p>
       )}
     </section>
   );

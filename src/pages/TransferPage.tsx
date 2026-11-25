@@ -15,7 +15,15 @@ export default function TransferPage() {
   return (
     <main>
       <h1>Transferir</h1>
-      {error ? <p role="alert">{error}</p> : currency ? <TransferForm currency={currency} /> : <p>Cargando...</p>}
+      {error ? (
+        <p className="alert alert-error" role="alert">
+          {error}
+        </p>
+      ) : currency ? (
+        <TransferForm currency={currency} />
+      ) : (
+        <p className="loading">Cargando...</p>
+      )}
     </main>
   );
 }

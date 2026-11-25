@@ -11,23 +11,37 @@ export default function TransferFilters({ filters, onChange }: Props) {
 
   return (
     <form className="card filters" onSubmit={(e) => e.preventDefault()}>
-      <label>
+      <label className="field">
         Destinatario
-        <input value={filters.name} onChange={set('name')} />
+        <input name="name" autoComplete="off" value={filters.name} onChange={set('name')} />
       </label>
-      <label>
+      <label className="field">
         Valor mínimo
-        <input type="number" value={filters.minValue} onChange={set('minValue')} />
+        <input
+          type="number"
+          name="minValue"
+          autoComplete="off"
+          min="0"
+          value={filters.minValue}
+          onChange={set('minValue')}
+        />
       </label>
-      <label>
+      <label className="field">
         Valor máximo
-        <input type="number" value={filters.maxValue} onChange={set('maxValue')} />
+        <input
+          type="number"
+          name="maxValue"
+          autoComplete="off"
+          min="0"
+          value={filters.maxValue}
+          onChange={set('maxValue')}
+        />
       </label>
-      <label>
+      <label className="field">
         Fecha
-        <input type="date" value={filters.date} onChange={set('date')} />
+        <input type="date" name="date" autoComplete="off" value={filters.date} onChange={set('date')} />
       </label>
-      <button type="button" onClick={() => onChange(emptyFilters)}>
+      <button type="button" className="btn-secondary" onClick={() => onChange(emptyFilters)}>
         Limpiar filtros
       </button>
     </form>

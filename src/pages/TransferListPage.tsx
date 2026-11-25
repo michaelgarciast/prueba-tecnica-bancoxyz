@@ -22,30 +22,40 @@ export default function TransferListPage() {
       <h1>Historial de transferencias</h1>
       <TransferFilters filters={filters} onChange={setFilters} />
       {error ? (
-        <p role="alert">{error}</p>
+        <p className="alert alert-error" role="alert">
+          {error}
+        </p>
       ) : !transfers ? (
-        <p>Cargando...</p>
+        <p className="loading">Cargando...</p>
+      ) : transfers.length === 0 ? (
+        <p className="card muted">Aún no hay transferencias</p>
       ) : filtered.length === 0 ? (
-        <p>Sin resultados</p>
+        <p className="card muted" role="status">
+          Sin resultados para los filtros aplicados
+        </p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Destinatario</th>
-              <th>Valor</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((t, i) => (
-              <tr key={i}>
-                <td>{t.payeer.name}</td>
-                <td>{formatCurrency(t.value, t.currency)}</td>
-                <td>{formatDate(t.date)}</td>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Destinatario</th>
+                <th scope="col" className="num">
+                  Valor
+                </th>
+                <th scope="col">Fecha</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filtered.map((t, i) => (
+                <tr key={i}>
+                  <td>{t.payeer.name}</td>
+                  <td className="num">{formatCurrency(t.value, t.currency)}</td>
+                  <td>{formatDate(t.date)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </main>
   );

@@ -46,7 +46,7 @@ test('sends the future date for a scheduled transfer', async () => {
   fill('100');
   fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2999-01-31' } });
   userEvent.click(screen.getByRole('button', { name: 'Transferir' }));
-  expect(await screen.findByRole('status')).toHaveTextContent('Transferencia agendada con éxito');
+  expect(await screen.findByRole('status')).toHaveTextContent('Transferencia agendada para el 31/01/2999');
   expect(mockedCreateTransfer).toHaveBeenCalledWith(
     expect.objectContaining({ value: 100, transferDate: '2999-01-31' })
   );
