@@ -1,12 +1,13 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import BalanceCard from './BalanceCard';
 import { getBalance } from '../api';
 
 jest.mock('../api');
 
-jest.mock('../auth/AuthContext', () => ({
-  useAuth: () => ({ user: { id: 1, name: 'Gabriel', email: 'gabriel@topaz.com' } }),
-}));
+jest.mock('../auth/AuthContext', () => {
+  const user = { id: 1, name: 'Gabriel', email: 'gabriel@topaz.com' };
+  return { useAuth: () => ({ user }) };
+});
 
 const mockedGetBalance = getBalance as jest.MockedFunction<typeof getBalance>;
 
@@ -18,6 +19,19 @@ test('shows the formatted balance', async () => {
   expect(screen.getByText('Cargando...')).toBeInTheDocument();
   const balance = await screen.findByText(/1\.234,50/);
   expect(balance).toHaveTextContent(/US\$|USD/);
+});
+
+test('hides and shows the available balance', async () => {
+  mockedGetBalance.mockResolvedValue({ currency: 'USD', accountBalance: 1234.5 });
+  render(<BalanceCard />);
+  expect(await screen.findByText(/1\.234,50/)).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Ocultar saldo disponible' }));
+  expect(screen.queryByText(/1\.234,50/)).not.toBeInTheDocument();
+  expect(screen.getByText('••••••••')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: 'Mostrar saldo disponible' }));
+  expect(screen.getByText(/1\.234,50/)).toBeInTheDocument();
 });
 
 test('subtracts due local transfers from the api balance', async () => {
