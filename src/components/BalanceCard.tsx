@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { BalanceResponse, getBalance } from '../api';
 import { useAuth } from '../auth/AuthContext';
 import { formatCurrency } from '../utils/format';
-import { spentLocalTransfers } from '../utils/localTransfers';
+import { availableBalance } from '../utils/localTransfers';
 
 export default function BalanceCard() {
   const { user } = useAuth();
@@ -12,10 +12,11 @@ export default function BalanceCard() {
   useEffect(() => {
     getBalance()
       .then((b) => {
-        // La API no descuenta las transferencias: se restan las locales ya vencidas
-        // (las agendadas a futuro descuentan cuando llegue su fecha).
-        const spent = user ? spentLocalTransfers(user.id) : 0;
-        setBalance({ ...b, accountBalance: b.accountBalance - spent });
+        // La API no descuenta las transferencias: se resta el total de las locales ya vencidas.
+        setBalance({
+          ...b,
+          accountBalance: user ? availableBalance(b.accountBalance, user.id) : b.accountBalance,
+        });
       })
       .catch(() => setError('No se pudo cargar el saldo'));
   }, [user]);

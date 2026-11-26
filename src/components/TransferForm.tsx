@@ -2,7 +2,7 @@ import { SubmitEvent, useState } from 'react';
 import { TransferRequest, createTransfer } from '../api';
 import { useAuth } from '../auth/AuthContext';
 import { formatCurrency, formatDate, todayLocal } from '../utils/format';
-import { saveLocalTransfer, spentLocalTransfers } from '../utils/localTransfers';
+import { saveLocalTransfer } from '../utils/localTransfers';
 
 interface Props {
   currency: string;
@@ -27,7 +27,6 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
   const [pending, setPending] = useState<TransferRequest | null>(null);
   const today = todayLocal();
   const amount = Number(value);
-  const availableBalance = accountBalance - (user ? spentLocalTransfers(user.id) : 0);
 
   const handleSubmit = (e: SubmitEvent) => {
     e.preventDefault();
@@ -35,7 +34,7 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
     setSuccess('');
     const doc = payeerDocument.trim();
     if (amount <= 0) return setError({ field: 'value', message: 'El valor debe ser mayor a 0' });
-    if (amount > availableBalance)
+    if (amount > accountBalance)
       return setError({ field: 'value', message: 'El valor excede el saldo disponible' });
     if (!doc) return setError({ field: 'document', message: 'El documento del destinatario es requerido' });
     if (date < today) return setError({ field: 'date', message: 'La fecha no puede ser pasada' });
@@ -132,7 +131,7 @@ export default function TransferForm({ currency, accountBalance }: Readonly<Prop
         {fieldError('value') || (
           <p id="value-hint" className="hint">
             {amount > 0 && `${formatCurrency(amount, currency)} · `}
-            Disponible: {formatCurrency(availableBalance, currency)}
+            Disponible: {formatCurrency(accountBalance, currency)}
           </p>
         )}
       </div>

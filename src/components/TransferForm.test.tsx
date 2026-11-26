@@ -75,17 +75,21 @@ test('shows an error and keeps the form when the api rejects the transfer', asyn
   expect(localStorage.getItem('transfers:1')).toBeNull();
 });
 
-test('counts previous transfers against the available balance', async () => {
+test('sends transfers with the same balance returned by the api', async () => {
   mockedCreateTransfer.mockResolvedValue({ status: 'success' });
   render(<TransferForm currency="COP" accountBalance={1000} />);
-  fill('800');
+  fill('400');
   submit();
   confirm();
   await screen.findByRole('status');
-  fill('800');
+  fill('400');
   submit();
-  expect(screen.getByRole('alert')).toHaveTextContent('El valor excede el saldo disponible');
-  expect(mockedCreateTransfer).toHaveBeenCalledTimes(1);
+  confirm();
+  expect(await screen.findByRole('status')).toHaveTextContent('Transferencia realizada con éxito');
+  expect(mockedCreateTransfer).toHaveBeenCalledTimes(2);
+  expect(mockedCreateTransfer).toHaveBeenLastCalledWith(
+    expect.objectContaining({ value: 400 })
+  );
 });
 
 test('sends the future date for a scheduled transfer', async () => {

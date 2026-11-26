@@ -19,6 +19,11 @@ export const saveLocalTransfer = (userId: number, transfer: Transfer) => {
   localStorage.setItem(keyFor(userId), JSON.stringify([...loadLocalTransfers(userId), transfer]));
 };
 
+// La API de la prueba no descuenta las transferencias creadas: se resta el total
+// de las locales ya vencidas (las agendadas descuentan cuando llegue su fecha).
+export const availableBalance = (accountBalance: number, userId: number) =>
+  accountBalance - spentLocalTransfers(userId);
+
 // Total ya descontado del saldo: solo cuentan las transferencias con fecha vencida.
 export const spentLocalTransfers = (userId: number) =>
   loadLocalTransfers(userId)
