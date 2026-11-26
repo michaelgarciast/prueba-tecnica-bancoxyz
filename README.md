@@ -72,5 +72,6 @@ src/
 - **Sesión en `localStorage`:** sobrevive al refresh.
 - **Filtros en el cliente:** la API no los ofrece. Están en una función pura (`filterTransfers`) testeada por separado.
 - **Fechas en hora local:** "hoy" se calcula en formato `YYYY-MM-DD` local (no con `toISOString()`, que usa UTC).
-- **Transferencias locales:** la API no persiste las transferencias creadas (`/transferList` siempre devuelve los mismos datos y `/balance` no cambia). Para que el flujo crear → listar sea demostrable, cada transferencia exitosa se guarda en `localStorage` por usuario: aparece en el historial, y las que ya están vencidas se descuentan del saldo mostrado y del disponible para transferir.
+- **Transferencias locales:** la API no persiste las transferencias creadas (`/transferList` siempre devuelve los mismos datos y `/balance` no cambia). Para que el flujo crear → listar sea demostrable, cada transferencia exitosa se guarda en `localStorage` por usuario: aparece en el historial del mismo navegador/perfil, y las que ya están vencidas se descuentan del saldo mostrado y del disponible para transferir. Si se limpia el almacenamiento del navegador, esas transferencias locales se pierden.
+- **Rutas desconocidas:** dentro de la sesión, una ruta que no existe muestra una página "Página no encontrada" con enlace al inicio, en lugar de redirigir silenciosamente.
 
