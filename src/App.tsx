@@ -10,7 +10,7 @@ function Layout() {
   return (
     <>
       <Navbar />
-      <div className="mx-auto max-w-4xl px-4 py-6">
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:py-10">
         <Outlet />
       </div>
     </>

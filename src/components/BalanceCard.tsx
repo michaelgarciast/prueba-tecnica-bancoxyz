@@ -30,7 +30,7 @@ export default function BalanceCard() {
     );
   } else if (balance) {
     content = (
-      <p className="text-3xl font-semibold tabular-nums text-slate-900">
+      <p className="text-3xl font-bold tracking-tight tabular-nums text-white sm:text-4xl">
         {formatCurrency(balance.accountBalance, balance.currency)}
       </p>
     );
@@ -39,8 +39,8 @@ export default function BalanceCard() {
   }
 
   return (
-    <section className="card">
-      <h2 className="mb-1 text-sm font-medium text-slate-500">Saldo disponible</h2>
+    <section className="card balance-card">
+      <h2 className="mb-2 text-sm font-medium text-[#f1eef8]">Saldo disponible</h2>
       {content}
     </section>
   );

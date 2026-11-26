@@ -47,9 +47,9 @@ export default function TransferListPage() {
     );
   } else {
     content = (
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
         <table className="w-full text-left">
-          <thead className="border-b border-slate-200 bg-slate-50 text-sm text-slate-500">
+          <thead className="border-b border-slate-200 bg-[#f2f7fb] text-sm text-[#21006f]">
             <tr>
               <th scope="col" className={th}>
                 Destinatario

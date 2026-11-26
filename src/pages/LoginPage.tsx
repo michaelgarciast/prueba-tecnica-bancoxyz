@@ -28,10 +28,12 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-8">
       <div className="w-full max-w-sm">
-        <p className="text-center text-2xl font-bold text-blue-700">BancoXYZ</p>
-        <p className="mb-6 text-center text-sm text-slate-500">Banca en línea</p>
-        <div className="card">
-          <h1 className="text-xl">Iniciar sesión</h1>
+        <p className="text-center text-3xl font-extrabold tracking-tight text-[#4a1596]">
+          Banco<span className="text-[#0092ff]">XYZ</span>
+        </p>
+        <p className="mb-6 mt-1 text-center text-sm font-medium text-[#4f5870]">Banca en línea</p>
+        <div className="card border-t-4 border-t-[#00e991]">
+          <h1 className="text-2xl">Iniciar sesión</h1>
           {sessionExpired && !error && (
             <p className="alert-info mb-4" role="status">
               Tu sesión expiró. Vuelve a ingresar.
