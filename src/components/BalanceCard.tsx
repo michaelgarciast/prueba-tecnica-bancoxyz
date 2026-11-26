@@ -8,6 +8,7 @@ export default function BalanceCard() {
   const { user } = useAuth();
   const [balance, setBalance] = useState<BalanceResponse | null>(null);
   const [error, setError] = useState('');
+  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
 
   useEffect(() => {
     getBalance()
@@ -30,8 +31,8 @@ export default function BalanceCard() {
     );
   } else if (balance) {
     content = (
-      <p className="text-3xl font-bold tracking-tight tabular-nums text-white sm:text-4xl">
-        {formatCurrency(balance.accountBalance, balance.currency)}
+      <p id="available-balance" className="text-3xl font-bold tracking-tight tabular-nums text-white sm:text-4xl">
+        {isBalanceVisible ? formatCurrency(balance.accountBalance, balance.currency) : '••••••••'}
       </p>
     );
   } else {
@@ -40,7 +41,20 @@ export default function BalanceCard() {
 
   return (
     <section className="card balance-card">
-      <h2 className="mb-2 text-sm font-medium text-[#f1eef8]">Saldo disponible</h2>
+      <div className="mb-2 flex items-center justify-between gap-4">
+        <h2 className="text-sm font-medium text-[#f1eef8]">Saldo disponible</h2>
+        {balance && !error && (
+          <button
+            type="button"
+            className="rounded text-sm font-medium text-white underline decoration-white/50 underline-offset-4 hover:decoration-white"
+            aria-label={isBalanceVisible ? 'Ocultar saldo disponible' : 'Mostrar saldo disponible'}
+            aria-controls="available-balance"
+            onClick={() => setIsBalanceVisible((visible) => !visible)}
+          >
+            {isBalanceVisible ? 'Ocultar' : 'Mostrar'}
+          </button>
+        )}
+      </div>
       {content}
     </section>
   );
