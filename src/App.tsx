@@ -1,4 +1,4 @@
-import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './auth/ProtectedRoute';
 import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
@@ -17,6 +17,18 @@ function Layout() {
   );
 }
 
+function NotFoundPage() {
+  return (
+    <main className="mx-auto max-w-md px-4 py-12 text-center">
+      <h1 className="text-2xl font-semibold text-slate-900">Página no encontrada</h1>
+      <p className="mt-2 text-sm text-slate-500">La ruta que buscas no existe.</p>
+      <Link to="/" className="btn mt-4 inline-flex h-10 items-center px-4">
+        Volver al inicio
+      </Link>
+    </main>
+  );
+}
+
 function App() {
   return (
     <Routes>
@@ -26,6 +38,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/transfer" element={<TransferPage />} />
           <Route path="/transfers" element={<TransferListPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
